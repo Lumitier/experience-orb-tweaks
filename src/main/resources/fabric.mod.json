@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "xporbtweaks",
+  "version": "${version}",
+  "name": "Experience Orb Tweaks",
+  "description": "Client-side customization of experience orbs: size, colors, pulse, opacity - plus value-based texture tiers so merged orbs stay distinguishable.",
+  "authors": [
+    "Lumitier"
+  ],
+  "contact": {
+    "homepage": "https://modrinth.com/mod/experience-orb-tweaks",
+    "sources": "https://github.com/Lumitier/experience-orb-tweaks",
+    "issues": "https://github.com/Lumitier/experience-orb-tweaks/issues"
+  },
+  "license": "Apache-2.0",
+  "icon": "assets/xporbtweaks/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.lumitier.xporbtweaks.client.XpOrbTweaksClient"
+    ],
+    "modmenu": [
+      "com.lumitier.xporbtweaks.config.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    {
+      "config": "xporbtweaks.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.20.1",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "yet_another_config_lib_v3": "*"
+  },
+  "suggests": {
+    "modmenu": "*"
+  }
+}
