@@ -1,5 +1,8 @@
 package com.lumitier.xporbtweaks.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.lumitier.xporbtweaks.XpOrbTweaks;
 import com.lumitier.xporbtweaks.duck.XpOrbValueHolder;
 import net.minecraft.client.render.OverlayTexture;
@@ -14,13 +17,8 @@ import net.minecraft.entity.ExperienceOrbEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArgs;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 /**
  * Eingriffe in den Vanilla-Renderer der Erfahrungskugeln.
@@ -81,35 +79,36 @@ public class ExperienceOrbEntityRendererMixin {
 	// Groesse: Vanilla skaliert mit 0.3F, wir setzen den Wert direkt.
 	// ------------------------------------------------------------------
 
-	@ModifyArgs(
+	@WrapOperation(
 		method = "render(Lnet/minecraft/client/render/entity/state/ExperienceOrbEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;Lnet/minecraft/client/render/state/CameraRenderState;)V",
 		at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/MatrixStack;scale(FFF)V")
 	)
-	private void xporbtweaks$scale(Args args) {
+	private void xporbtweaks$scale(MatrixStack matrices, float x, float y, float z,
+	                               Operation<Void> original) {
 		if (!XpOrbTweaks.enabled) {
+			original.call(matrices, x, y, z);
 			return;
 		}
 		float s = XpOrbTweaks.clamp(XpOrbTweaks.scale, 0.05F, 2.0F);
-		args.set(0, s);
-		args.set(1, s);
-		args.set(2, s);
+		original.call(matrices, s, s, s);
 	}
 
 	// ------------------------------------------------------------------
 	// Farbe: eigener Zeichenaufruf statt des Vanilla-Lambdas.
 	// ------------------------------------------------------------------
 
-	@Redirect(
+	@WrapOperation(
 		method = "render(Lnet/minecraft/client/render/entity/state/ExperienceOrbEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;Lnet/minecraft/client/render/state/CameraRenderState;)V",
 		at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;submitCustom(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/RenderLayer;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue$Custom;)V")
 	)
 	private void xporbtweaks$submit(OrderedRenderCommandQueue self,
 	                                MatrixStack submitMatrices, RenderLayer layer,
 	                                OrderedRenderCommandQueue.Custom vanilla,
+	                                Operation<Void> original,
 	                                ExperienceOrbEntityRenderState state, MatrixStack matrices,
 	                                OrderedRenderCommandQueue queue, CameraRenderState camera) {
 		if (!XpOrbTweaks.enabled) {
-			self.submitCustom(submitMatrices, layer, vanilla);
+			original.call(self, submitMatrices, layer, vanilla);
 			return;
 		}
 
@@ -138,7 +137,7 @@ public class ExperienceOrbEntityRendererMixin {
 		final float y0 = 0.25F + (-0.25F - 0.25F) * g;
 		final float y1 = 0.25F + ( 0.75F - 0.25F) * g;
 
-		self.submitCustom(submitMatrices, layer, (entry, consumer) -> {
+		original.call(self, submitMatrices, layer, (OrderedRenderCommandQueue.Custom) (entry, consumer) -> {
 			xporbtweaks$vertex(consumer, entry, x0, y0, cr, cg, cb, ca, u0, v1, light);
 			xporbtweaks$vertex(consumer, entry, x1, y0, cr, cg, cb, ca, u1, v1, light);
 			xporbtweaks$vertex(consumer, entry, x1, y1, cr, cg, cb, ca, u1, v0, light);
@@ -188,9 +187,9 @@ public class ExperienceOrbEntityRendererMixin {
 	// Eigenleuchten: Vanilla addiert +7 auf das Blocklicht.
 	// ------------------------------------------------------------------
 
-	@ModifyConstant(
+	@ModifyExpressionValue(
 		method = "getBlockLight(Lnet/minecraft/entity/ExperienceOrbEntity;Lnet/minecraft/util/math/BlockPos;)I",
-		constant = @Constant(intValue = 7)
+		at = @At(value = "CONSTANT", args = "intValue=7")
 	)
 	private int xporbtweaks$glow(int original) {
 		if (!XpOrbTweaks.enabled) {
