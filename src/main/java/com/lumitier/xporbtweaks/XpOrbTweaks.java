@@ -39,6 +39,20 @@ public final class XpOrbTweaks {
 	/** Mod global an/aus. */
 	public static volatile boolean enabled = true;
 
+	/**
+	 * Vom Server abgeschaltet (LumiLibControlPlugin ueber LumiLib).
+	 *
+	 * Bewusst ein EIGENES Feld und nicht "enabled = false": Das hier gilt
+	 * nur fuer die aktuelle Verbindung und wird nie gespeichert. Sonst
+	 * waere die Mod nach dem Besuch eines einzigen Servers dauerhaft aus.
+	 */
+	public static volatile boolean serverDisabled = false;
+
+	/** Wirkt die Mod gerade? Eigener Schalter UND der Server muessen es erlauben. */
+	public static boolean active() {
+		return enabled && !serverDisabled;
+	}
+
 	/** Erfahrungskugeln ueberhaupt zeichnen. */
 	public static volatile boolean renderOrbs = true;
 

@@ -56,6 +56,16 @@ public final class LumiLibCompat {
 			// oeffnet weiterhin diesen Bildschirm.
 			XpOrbTweaksScreen::create,
 			LumiLibCompat::settings));
+
+		// Server-Regeln (LumiLibControlPlugin). Eigener Fang: Mit einer
+		// LumiLib aelter als 1.3.0 gibt es die Methode nicht - dann soll die
+		// Mod trotzdem im Hub stehen, nur eben ohne Server-Steuerung.
+		try {
+			LumiLibApi.onServerRulesChanged(() ->
+				XpOrbTweaks.serverDisabled = LumiLibApi.isDisabledByServer(XpOrbTweaks.MOD_ID));
+		} catch (Throwable t) {
+			XpOrbTweaks.LOGGER.warn("[XP Orb Tweaks] LumiLib is too old for server control (needs 1.3.0+).");
+		}
 	}
 
 	/**

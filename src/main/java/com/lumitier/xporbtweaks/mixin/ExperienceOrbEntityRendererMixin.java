@@ -70,7 +70,7 @@ public class ExperienceOrbEntityRendererMixin {
 	private void xporbtweaks$maybeSkip(ExperienceOrbEntityRenderState state, MatrixStack matrices,
 	                                   OrderedRenderCommandQueue queue, CameraRenderState camera,
 	                                   CallbackInfo ci) {
-		if (XpOrbTweaks.enabled && !XpOrbTweaks.renderOrbs) {
+		if (XpOrbTweaks.active() && !XpOrbTweaks.renderOrbs) {
 			ci.cancel();
 		}
 	}
@@ -85,7 +85,7 @@ public class ExperienceOrbEntityRendererMixin {
 	)
 	private void xporbtweaks$scale(MatrixStack matrices, float x, float y, float z,
 	                               Operation<Void> original) {
-		if (!XpOrbTweaks.enabled) {
+		if (!XpOrbTweaks.active()) {
 			original.call(matrices, x, y, z);
 			return;
 		}
@@ -107,7 +107,7 @@ public class ExperienceOrbEntityRendererMixin {
 	                                Operation<Void> original,
 	                                ExperienceOrbEntityRenderState state, MatrixStack matrices,
 	                                OrderedRenderCommandQueue queue, CameraRenderState camera) {
-		if (!XpOrbTweaks.enabled) {
+		if (!XpOrbTweaks.active()) {
 			original.call(self, submitMatrices, layer, vanilla);
 			return;
 		}
@@ -173,7 +173,7 @@ public class ExperienceOrbEntityRendererMixin {
 		// dem Client korrekt - auch bei einem von Clumps verschmolzenen Orb.
 		((XpOrbValueHolder) state).xporbtweaks$setValue(entity.getValue());
 
-		if (!XpOrbTweaks.enabled || !XpOrbTweaks.scaleShadow) {
+		if (!XpOrbTweaks.active() || !XpOrbTweaks.scaleShadow) {
 			return;
 		}
 		float f = XpOrbTweaks.clamp(XpOrbTweaks.scale, 0.05F, 2.0F) / 0.3F;
@@ -192,7 +192,7 @@ public class ExperienceOrbEntityRendererMixin {
 		at = @At(value = "CONSTANT", args = "intValue=7")
 	)
 	private int xporbtweaks$glow(int original) {
-		if (!XpOrbTweaks.enabled) {
+		if (!XpOrbTweaks.active()) {
 			return original;
 		}
 		return XpOrbTweaks.clampInt(XpOrbTweaks.glow, 0, 15);
